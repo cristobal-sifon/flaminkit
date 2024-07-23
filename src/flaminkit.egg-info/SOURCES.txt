@@ -1,0 +1,8 @@
+setup.py
+src/flaminkit/__init__.py
+src/flaminkit/core.py
+src/flaminkit.egg-info/PKG-INFO
+src/flaminkit.egg-info/SOURCES.txt
+src/flaminkit.egg-info/dependency_links.txt
+src/flaminkit.egg-info/not-zip-safe
+src/flaminkit.egg-info/top_level.txt

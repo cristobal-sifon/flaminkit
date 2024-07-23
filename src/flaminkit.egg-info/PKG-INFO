@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: flaminkit
+Version: 0.0.1
+Summary: A toolkit for the FLAMINGO simulation suite
+Home-page: https://github.com/cristobal-sifon/flaminkit/
+Author: Cristobal Sifon
+Author-email: cristobal.sifon@pucv.cl
+Requires-Python: >=3.7,<3.12
