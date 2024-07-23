@@ -323,3 +323,72 @@ def particles_around(particle_file, coords, dmax, particle_type, dmin=0 * unyt.M
             for m, xyz in zip(matching, coords)
         ]
     return p, matching
+
+
+def parse_args(args=None):
+    """Parse command-line arguments
+
+    Parameters
+    ----------
+    args : `list`-like, optional
+        additional arguments to include in the parser. Each element in
+        ``args`` should contain two elements: the string(s) enabling the
+        argument and the kwargs to add it to the parser. For instance,
+            args=(('--foo', {'type': int, 'default': 1}),
+                  ('--bar', {'action': 'store_true'}))
+
+    Returns
+    -------
+        args : output of `parser.parse_args`
+    """
+    parser = read_args()
+    if args is not None:
+        if isinstance(args[0], str):
+            args = (args,)
+        for argname, kwargs in args:
+            parser.add_argument(argname, **kwargs)
+    args = parser.parse_args()
+    # for now
+    args.path = dict(main=os.path.join(os.environ.get("FLAMINGO"), args.box, args.sim))
+    args.path["particles"] = os.path.join(
+        args.path.get("main"), "snapshots_downsampled"
+    )
+    args.path["SOAP-HBT"] = os.path.join(
+        "/cosma8/data/dp004/dc-foro1/HBT_SOAP",
+        args.box,
+        args.sim,
+        "SOAP_uncompressed",
+        "HBTplus",
+    )
+    args.path["SOAP-VR"] = os.path.join(args.path.get("main"), "SOAP")
+    if args.snapshot is not None:
+        args.path["snapshot"] = os.path.join(
+            args.path.get("main"), "snapshots", f"flamingo_{args.snapshot:04d}"
+        )
+        args.snapshot_file = os.path.join(
+            args.path.get("snapshot"), f"flamingo_{args.snapshot:04d}.hdf5"
+        )
+    # if args.test:
+    #     args.debug = True
+    # if not args.debug:
+    #     ic.disable()
+    return args
+
+
+def read_args():
+    """Set up the base command-line arguments
+
+    Call this function from any program if there are additional
+    command-line arguments in it (to be added manually from that
+    program)
+
+    Returns
+    -------
+    parser : `argparse.ArgumentParser` object
+    """
+    parser = ArgumentParser()
+    add = parser.add_argument
+    add("-b", "--box", default="L1000N1800")
+    add("-s", "--sim", default="HYDRO_FIDUCIAL")
+    add("-z", "--snapshot", default=77, type=int)
+    return parser
