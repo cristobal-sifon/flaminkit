@@ -3,6 +3,6 @@
 *.save
 *.DS_Store
 
-build
-dist
+build/
+dist/
 *egg-info/
