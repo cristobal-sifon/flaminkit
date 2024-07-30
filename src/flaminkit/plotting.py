@@ -1,3 +1,8 @@
+"""Custom plotting tools for FLAMINGO
+
+Under development!
+"""
+
 # some generic ones to start
 axlabels = {
     "StellarMass": "m_{\u2605}",
