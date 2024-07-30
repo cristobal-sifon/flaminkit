@@ -1,5 +1,7 @@
+from argparse import ArgumentParser
 import h5py
 import numpy as np
+import os
 import pandas as pd
 import swiftsimio as sw
 import unyt
@@ -139,13 +141,15 @@ def subhalos_in_clusters(
             shuffle=False,
         )
         clusters = clusters.iloc[n]
-    # we don't need this
+    # we don't need this as it's in the galaxies
     if "TrackId" in clusters.columns:
         clusters.pop("TrackId")
     cluster_galaxies = clusters.merge(
         galaxies, how="inner", on="HostHaloId", suffixes=("_cl", "_gal")
     )
-    return cluster_galaxies.sort_values(["HostHaloId", "Rank"], ignore_index=True)
+    if "Rank" in cluster_galaxies.columns:
+        cluster_galaxies = cluster_galaxies.sort_values("Rank", ignore_index=True)
+    return cluster_galaxies.sort_values("HostHaloId", ignore_index=True)
 
 
 def infalling_groups(
@@ -266,7 +270,9 @@ def infalling_groups(
     return main_clusters, infallers
 
 
-def particles_around(particle_file, coords, dmax, particle_type, dmin=0 * unyt.Mpc):
+def particles_around(
+    particle_file, coords, dmax, particle_type, dmin=0 * unyt.Mpc, squeeze=True
+):
     """Find particles no further than a given distance from sets of coordinates
 
     Parameters
@@ -276,20 +282,28 @@ def particles_around(particle_file, coords, dmax, particle_type, dmin=0 * unyt.M
         coordinates of interest
     dmax : ``unyt.unyt_quantity``
         maximum 3d distance to include particles
-    particle_type : ``str``
-        one of "dm", "gas", "stars"
+    particle_type : iterable
+        items must be any subset of ["dm", "gas", "stars"]
     dmin : ``unyt.unyt_quantity``, optional
         minimum 3d distance
+    squeeze: ``bool``, optional
+        return squeezed array if only one particle type is provided
 
     Returns
     -------
-    particles : ``swiftsimio.reader.SWIFTDataset``
+    particles : ``swiftsimio.reader.SWIFTDataset`` or list
         Loaded particles within cubical masks
-    matching : ``list`` of ``np.ndarray``, ``len = len(coords)``
+    matching : ``list`` of ``np.ndarray``, each with ``len = len(coords)``
         List of indices pointing to ``particles`` corresponding to all
-        particles around each subhalo
+        particles around each subhalo within the distance constraints
     """
-    assert particle_type in ("dm", "gas", "stars")
+    # assert particle types
+    _valid_types = ["dm", "gas", "stars"]
+    if isinstance(particle_type, str):
+        particle_type = [particle_type]
+    for pt in particle_type:
+        if pt not in _valid_types:
+            raise ValueError(f"particle type {pt} not recognized")
     if coords.units != dmax.units:
         coords = coords.to(dmax.units)
     mask = sw.mask(particle_file)
@@ -307,21 +321,31 @@ def particles_around(particle_file, coords, dmax, particle_type, dmin=0 * unyt.M
     for region in regions[1:]:
         mask.constrain_spatial(region, intersect=True)
     particles = sw.load(particle_file, mask=mask)
-    if particle_type == "dm":
-        p = particles.dark_matter
-    elif particle_type == "gas":
-        p = particles.gas
-    elif particle_type == "stars":
-        p = particles.stars
-    rng = np.arange(p.masses.size, dtype=int)
+    p = [[]] * len(particle_type)
+    for i, pt in enumerate(particle_type):
+        if pt == "dm":
+            p[i] = particles.dark_matter
+        elif pt == "gas":
+            p[i] = particles.gas
+        elif pt == "stars":
+            p[i] = particles.stars
+    ic(p)
+    rngs = [np.arange(pi.masses.size, dtype=int) for pi in p]
     matching = [
-        rng[((p.coordinates - xyz) ** 2).sum(axis=1) ** 0.5 < dmax] for xyz in coords
+        [rng[((pi.coordinates - xyz) ** 2).sum(axis=1) ** 0.5 < dmax] for xyz in coords]
+        for pi, rng in zip(p, rngs)
     ]
     if dmin.value > 0:
         matching = [
-            ((p.coordinates[m] - xyz) ** 2).sum(axis=1) ** 0.5 > dmin
-            for m, xyz in zip(matching, coords)
+            [
+                ((pi.coordinates[m] - xyz) ** 2).sum(axis=1) ** 0.5 > dmin
+                for m, xyz in zip(matching, coords)
+            ]
+            for pi, rng in zip(p, rngs)
         ]
+    if len(particle_type) == 1 and squeeze:
+        p = p[0]
+        matching = matching[0]
     return p, matching
 
 
@@ -391,4 +415,5 @@ def read_args():
     add("-b", "--box", default="L1000N1800")
     add("-s", "--sim", default="HYDRO_FIDUCIAL")
     add("-z", "--snapshot", default=77, type=int)
+    add("--seed", default=1, type=int, help="Random seed")
     return parser
