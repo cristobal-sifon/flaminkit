@@ -37,121 +37,6 @@ def halofile(args, info=True):
     return halofile
 
 
-def subhalos_in_clusters(
-    halofile,
-    cluster_mass_min=0,
-    cluster_mass_max=np.inf,
-    clusters=None,
-    n=None,
-    subhalo_mask=None,
-    overdensity="200_crit",
-    subhalo_cols=None,
-    so_cols=None,
-    random_seed=None,
-):
-    """Find subhalos within a given cluster mass range
-
-    NOTE: only works with HBT+ catalogs for now
-
-    Parameters
-    ----------
-    halofile : ``str``
-        hdf5 file name
-    cluster_mass_min, cluster_mass_max : ``float``, optional
-        minimum and maximum spherical overdensity cluster mass, in Msun
-    clusters : ``pd.DataFrame``, optional
-        cluster sample. Must contain at least the columns ``(HostHaloId,CentreOfMass_x,CentreOfMass_y,CentreOfMass_z)``
-    n : int, optional
-        number of clusters to return, chosen randomly given the mass range.
-        If not specified all clusters are returned
-    subhalo_mask : ``dict``, optional
-        minimum and maximum subhalo values, given as an iterable of (vmin, vmax) for each
-        desired column. Dictionary keys can be any subset of columns
-        from ``BoundSubhaloProperties``. The mask is applied as ``vmin <= x < vmax``
-    overdensity : ``str``
-        spherical overdensity as named in ``halofile``
-    subhalo_cols : ``list``, optional
-        list of columns from ``BoundSubhaloProperties`` to include in
-        addition to ``(HostHaloId,TrackId,Rank)``. Because the object returned
-        is a ``pd.DataFrame``, columns with more than one dimension are not yet
-        supported
-    so_cols : ``list``, optional
-        list of spherical overdensity columns to include in addition to
-        ``TotalMass``. Ignored if ``clusters`` is provided
-
-    Returns
-    -------
-    cluster_galaxies : ``pd.DataFrame``
-        galaxies within clusters
-    """
-    with h5py.File(halofile) as file:
-        hostid = file.get("InputHalos/HBTplus/HostHaloId")[()]
-        # merge centrals and satellites as in testing.py
-        com = file.get("BoundSubhaloProperties/CentreOfMass")
-        galaxies = pd.DataFrame(
-            {
-                "TrackId": file.get("InputHalos/HBTplus/TrackId")[()],
-                "HostHaloId": hostid,
-                "Rank": file.get("InputHalos/HBTplus/Rank")[()],
-            }
-        )
-        for i, coord in enumerate("xyz"):
-            galaxies[coord] = com[:, i]
-        if subhalo_cols is not None:
-            for col in subhalo_cols:
-                galaxies[col] = file.get(f"BoundSubhaloProperties/{col}")[()]
-        # in case there are constraints on subhalos
-        mask = hostid > -1
-        if subhalo_mask is not None:
-            for col, (vmin, vmax) in subhalo_mask.items():
-                xmask = file.get(f"BoundSubhaloProperties/{col}")[()]
-                mask = mask & (xmask >= vmin) & (xmask < vmax)
-            del xmask
-        galaxies = galaxies.loc[mask]
-        if clusters is None:
-            mcl = file.get(f"SO/{overdensity}/TotalMass")[()][mask]
-            bcg = (mcl > cluster_mass_min) & (mcl < cluster_mass_max)
-            clusters = pd.DataFrame(
-                {
-                    "HostHaloId": galaxies["HostHaloId"][bcg],
-                    "SO/TotalMass": mcl[bcg],
-                }
-            )
-            if so_cols is not None:
-                if isinstance(so_cols, str):
-                    so_cols = (so_cols,)
-                for col in so_cols:
-                    clusters[f"SO/{col}"] = file.get(f"SO/{overdensity}/{col}")[()][
-                        mask
-                    ][bcg]
-        else:
-            # let's just make sure it contains everything we need
-            assert isinstance(clusters, pd.DataFrame)
-            musthave = ["HostHaloId", "TrackId"]
-            assert np.isin(clusters.columns, musthave).sum() == len(
-                musthave
-            ), f"clusters must contain columns {musthave}"
-            bcg = np.isin(galaxies["TrackId"], clusters["TrackId"])
-    if n is not None:
-        rdm = np.random.default_rng(random_seed)
-        n = rdm.choice(
-            clusters["HostHaloId"].size,
-            n,
-            replace=False,
-            shuffle=False,
-        )
-        clusters = clusters.iloc[n]
-    # we don't need this as it's in the galaxies
-    if "TrackId" in clusters.columns:
-        clusters.pop("TrackId")
-    cluster_galaxies = clusters.merge(
-        galaxies, how="inner", on="HostHaloId", suffixes=("_cl", "_gal")
-    )
-    if "Rank" in cluster_galaxies.columns:
-        cluster_galaxies = cluster_galaxies.sort_values("Rank", ignore_index=True)
-    return cluster_galaxies.sort_values("HostHaloId", ignore_index=True)
-
-
 def infalling_groups(
     halofile,
     cluster_mass_min=0,
@@ -347,6 +232,169 @@ def particles_around(
         p = p[0]
         matching = matching[0]
     return p, matching
+
+
+def subhalos_in_clusters(
+    halofile,
+    cluster_mass_min=0,
+    cluster_mass_max=np.inf,
+    clusters=None,
+    n=None,
+    subhalo_mask=None,
+    overdensity="200_crit",
+    subhalo_cols=None,
+    so_cols=None,
+    random_seed=None,
+):
+    """Find subhalos within a given cluster mass range
+
+    NOTE: only works with HBT+ catalogs for now
+
+    Parameters
+    ----------
+    halofile : ``str``
+        hdf5 file name
+    cluster_mass_min, cluster_mass_max : ``float``, optional
+        minimum and maximum spherical overdensity cluster mass, in Msun
+    clusters : ``pd.DataFrame``, optional
+        cluster sample. Must contain at least the columns ``(HostHaloId,CentreOfMass_x,CentreOfMass_y,CentreOfMass_z)``
+    n : int, optional
+        number of clusters to return, chosen randomly given the mass range.
+        If not specified all clusters are returned
+    subhalo_mask : ``dict``, optional
+        minimum and maximum subhalo values, given as an iterable of (vmin, vmax) for each
+        desired column. Dictionary keys can be any subset of columns
+        from ``BoundSubhaloProperties``. The mask is applied as ``vmin <= x < vmax``
+    overdensity : ``str``
+        spherical overdensity as named in ``halofile``
+    subhalo_cols : ``list``, optional
+        list of columns from ``BoundSubhaloProperties`` to include in
+        addition to ``(HostHaloId,TrackId,Rank)``. Because the object returned
+        is a ``pd.DataFrame``, columns with more than one dimension are not yet
+        supported
+    so_cols : ``list``, optional
+        list of spherical overdensity columns to include in addition to
+        ``TotalMass``. Ignored if ``clusters`` is provided
+
+    Returns
+    -------
+    cluster_galaxies : ``pd.DataFrame``
+        galaxies within clusters
+    """
+    with h5py.File(halofile) as file:
+        hostid = file.get("InputHalos/HBTplus/HostHaloId")[()]
+        # merge centrals and satellites as in testing.py
+        com = file.get("BoundSubhaloProperties/CentreOfMass")
+        galaxies = pd.DataFrame(
+            {
+                "TrackId": file.get("InputHalos/HBTplus/TrackId")[()],
+                "HostHaloId": hostid,
+                "Rank": file.get("InputHalos/HBTplus/Rank")[()],
+            }
+        )
+        for i, coord in enumerate("xyz"):
+            galaxies[coord] = com[:, i]
+        if subhalo_cols is not None:
+            for col in subhalo_cols:
+                galaxies[col] = file.get(f"BoundSubhaloProperties/{col}")[()]
+        # in case there are constraints on subhalos
+        mask = hostid > -1
+        if subhalo_mask is not None:
+            for col, (vmin, vmax) in subhalo_mask.items():
+                xmask = file.get(f"BoundSubhaloProperties/{col}")[()]
+                mask = mask & (xmask >= vmin) & (xmask < vmax)
+            del xmask
+        galaxies = galaxies.loc[mask]
+        if clusters is None:
+            mcl = file.get(f"SO/{overdensity}/TotalMass")[()][mask]
+            bcg = (mcl > cluster_mass_min) & (mcl < cluster_mass_max)
+            clusters = pd.DataFrame(
+                {
+                    "HostHaloId": galaxies["HostHaloId"][bcg],
+                    "SO/TotalMass": mcl[bcg],
+                }
+            )
+            if so_cols is not None:
+                if isinstance(so_cols, str):
+                    so_cols = (so_cols,)
+                for col in so_cols:
+                    clusters[f"SO/{col}"] = file.get(f"SO/{overdensity}/{col}")[()][
+                        mask
+                    ][bcg]
+        else:
+            # let's just make sure it contains everything we need
+            assert isinstance(clusters, pd.DataFrame)
+            musthave = ["HostHaloId", "TrackId"]
+            assert np.isin(clusters.columns, musthave).sum() == len(
+                musthave
+            ), f"clusters must contain columns {musthave}"
+            bcg = np.isin(galaxies["TrackId"], clusters["TrackId"])
+    if n is not None:
+        rdm = np.random.default_rng(random_seed)
+        n = rdm.choice(
+            clusters["HostHaloId"].size,
+            n,
+            replace=False,
+            shuffle=False,
+        )
+        clusters = clusters.iloc[n]
+    # we don't need this as it's in the galaxies
+    if "TrackId" in clusters.columns:
+        clusters.pop("TrackId")
+    cluster_galaxies = clusters.merge(
+        galaxies, how="inner", on="HostHaloId", suffixes=("_cl", "_gal")
+    )
+    if "Rank" in cluster_galaxies.columns:
+        cluster_galaxies = cluster_galaxies.sort_values("Rank", ignore_index=True)
+    return cluster_galaxies.sort_values("HostHaloId", ignore_index=True)
+
+
+def subhalo_particle_statistic(
+    particle_data, subhalo_particles, statistic, weights=None, **kwargs
+):
+    """Calculate subhalo properties from the particle distribution
+
+    Parameters
+    ----------
+    particle_data : ``swiftsimio.objects.cosmo_array``
+        particle property, i.e., column from a ``swiftsimio.reader.SWIFTDataset``
+    subhalo_particles : ``np.ndarray`` or ``list`, ``len = N``
+        list of indices or masks relating elements of ``particle_data`` to each
+        subhalo
+    statistic : callable
+        function to apply to the particles of each subhalo.
+    weights : ``swiftsimio.objects.cosmo_array`` or ``np.ndarray``, optional
+        weights applied to obtain a weighted statistic
+    kwargs : dict, optional
+        additional arguments passed to ``statistic``. Note that if this includes
+        another ``swiftsimio.objects.cosmo_array`` (e.g., as weights) it is
+        recommended to give the ``ndarray_view`` to ensure proper behaviour
+
+    Returns
+    -------
+    subhalo_property : ``np.ndarray``, ``shape = (N,)``
+        subhalo property obtained from the particles
+
+    Notes
+    -----
+    - If a property has more than one dimension (e.g., a position or velocity)
+      it is easiest to pass each array to this function separately as ::
+
+            mean_velocity = [subhalo_particle_statistic(
+                particles.velocities[:,i], subhalo_particles, np.mean)
+                for i in range(3)]
+
+    """
+    # this is the fastest way to get ndarray behaviour
+    data = particle_data.ndarray_view()
+    if weights is None:
+        return np.array([statistic(data[p], **kwargs) for p in subhalo_particles])
+    if isinstance(weights, sw.objects.cosmo_array):
+        weights = weights.ndarray_view()
+    # this avoids ZeroDivisionError if all the weights are zero for a
+    # particular subhalo (e.g. if weighting by gas mass)
+    f = lambda x, w, **kwargs: statistic(x, weights=w, **kwargs) if np.any(w > 0) else 0
+    return np.array([f(data[p], weights[p], **kwargs) for p in subhalo_particles])
 
 
 def parse_args(args=None):
