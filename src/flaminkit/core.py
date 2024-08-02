@@ -73,7 +73,7 @@ def infalling_groups(
         spherical overdensity as named in ``halofile``
     so_cols : ``list``, optional
         list of spherical overdensity columns to include in addition to
-        ``TotalMass``
+        ``TotalMass`` -- NOT YET IMPLEMENTED
 
     Returns
     -------
@@ -124,10 +124,14 @@ def infalling_groups(
         )
         clusters = clusters.iloc[n]
     groups = df.loc[df["TotalMass"] > group_mass_min]
+    del df
     # main_clusters = []
     infallers = {
         "TrackId": [],
         "HostHaloId": [],
+        "CentreOfMass_x": [],
+        "CentreOfMass_y": [],
+        "CentreOfMass_z": [],
         "TotalMass": [],
         "SORadius": [],
         "MainTrackId": [],
@@ -144,7 +148,9 @@ def infalling_groups(
         if not np.any(groups["TotalMass"].loc[near] > cl.TotalMass):
             # main_clusters.append(cl.Index)
             infallers["MainTrackId"].extend(near.sum() * [cl.TrackId])
-            for col in ("TrackId", "HostHaloId", "TotalMass", "SORadius"):
+            for col in infallers.keys():
+                if col in ("MainTrackId", "DistanceToMain"):
+                    continue
                 infallers[col].extend(groups[col].loc[near])
             infallers["DistanceToMain"].extend(dist[near])
     infallers = pd.DataFrame(infallers)
@@ -425,6 +431,7 @@ def parse_args(args=None):
     args.path["particles"] = os.path.join(
         args.path.get("main"), "snapshots_downsampled"
     )
+    # for now
     args.path["SOAP-HBT"] = os.path.join(
         "/cosma8/data/dp004/dc-foro1/HBT_SOAP",
         args.box,
@@ -440,10 +447,10 @@ def parse_args(args=None):
         args.snapshot_file = os.path.join(
             args.path.get("snapshot"), f"flamingo_{args.snapshot:04d}.hdf5"
         )
-    # if args.test:
-    #     args.debug = True
-    # if not args.debug:
-    #     ic.disable()
+    if args.test:
+        args.debug = True
+    if not args.debug:
+        ic.disable()
     return args
 
 
@@ -454,6 +461,9 @@ def read_args():
     command-line arguments in it (to be added manually from that
     program)
 
+    Note that any program might ignore any of these default
+    command-line arguments if only a subset are relevant
+
     Returns
     -------
     parser : `argparse.ArgumentParser` object
@@ -463,5 +473,13 @@ def read_args():
     add("-b", "--box", default="L1000N1800")
     add("-s", "--sim", default="HYDRO_FIDUCIAL")
     add("-z", "--snapshot", default=77, type=int)
+    add("--debug", action="store_true")
     add("--seed", default=1, type=int, help="Random seed")
+    add("--test", action="store_true")
+    add("--min-mass-cluster", default=1e15, type=float, help="Minimum cluster mass")
+    add("--min-mass-group", default=1e13, type=float, help="Minimum mass for groups")
+    add(
+        "--ncl", default=None, type=int, help="Number of main clusters (for quick runs)"
+    )
+    add("--ngal", default=None, type=int, help="Number of galaxies (for quick runs)")
     return parser
