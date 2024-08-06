@@ -28,10 +28,6 @@ def read(fname):
     return open(os.path.join(here, fname)).read()
 
 
-def read_requirements(reqfile):
-    return [i for i in open(reqfile).read().split("\n") if i]
-
-
 setup(
     name="flaminkit",
     version=find_version("src/flaminkit/__init__.py"),
@@ -43,7 +39,15 @@ setup(
     url="https://github.com/cristobal-sifon/flaminkit/",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    install_requires=read_requirements("requirements.txt"),
+    include_package_data=True,
+    install_requires=[
+        "h5py>=3.0",
+        "icecream>=2.1",
+        "matplotlib>=3.8",
+        "numpy>=1.25",
+        "pandas>=2.2",
+        "scipy>=1.1",
+    ],
     python_requires=">=3.7,<3.12",
     zip_safe=False,
 )
