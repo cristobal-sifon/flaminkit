@@ -4,6 +4,7 @@ import numpy as np
 import os
 import pandas as pd
 import swiftsimio as sw
+from tqdm import tqdm
 import unyt
 import warnings
 
@@ -189,6 +190,7 @@ def particles_around(
         List of indices pointing to ``particles`` corresponding to all
         particles around each subhalo within the distance constraints
     """
+    _tqdm = tqdm if progress else lambda x, **kwargs: x
     # assert particle types
     _valid_types = ["dm", "gas", "stars"]
     if isinstance(particle_type, str):
@@ -223,6 +225,7 @@ def particles_around(
             p[i] = particles.stars
     ic(p)
     rngs = [np.arange(pi.masses.size, dtype=int) for pi in p]
+    # for xyz in _tqdm(coords, total=len(coords)):
     matching = [
         [rng[((pi.coordinates - xyz) ** 2).sum(axis=1) ** 0.5 < dmax] for xyz in coords]
         for pi, rng in zip(p, rngs)
@@ -243,8 +246,6 @@ def particles_around(
 
 def subhalos_in_clusters(
     halofile,
-    cluster_mass_min=0,
-    cluster_mass_max=np.inf,
     cluster_mask=None,
     clusters=None,
     n=None,
@@ -332,16 +333,18 @@ def subhalos_in_clusters(
                 mask = mask & (xmask >= vmin) & (xmask < vmax)
             del xmask
         galaxies = galaxies.loc[mask]
+        # load clusters
         if clusters is None:
             cols = []
             clmask = rank == 0
-            clusters = {"HostHaloId": hostid[clmask]}
             if isinstance(cluster_mask, dict):
                 for col, (vmin, vmax) in cluster_mask.items():
                     v = file.get(col)[()][valid]
                     clmask = clmask & (v >= vmin) & (v < vmax)
                     cols.append((col, v))
                 cols = {col: v[clmask] for col, v in cols}
+            clusters = {"HostHaloId": hostid[clmask]}
+            if isinstance(cluster_mask, dict):
                 clusters = {**clusters, **cols}
             clusters = pd.DataFrame(clusters)
             if so_cols is not None:
