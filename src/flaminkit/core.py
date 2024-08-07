@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import swiftsimio as sw
 import unyt
+import warnings
 
 # debugging
 from icecream import ic
@@ -244,6 +245,7 @@ def subhalos_in_clusters(
     halofile,
     cluster_mass_min=0,
     cluster_mass_max=np.inf,
+    cluster_mask=None,
     clusters=None,
     n=None,
     subhalo_mask=None,
@@ -252,9 +254,11 @@ def subhalos_in_clusters(
     so_cols=None,
     random_seed=None,
 ):
-    """Find subhalos within a given cluster mass range
+    """Find subhalos within a given cluster population
 
-    NOTE: only works with HBT+ catalogs for now
+    .. note::
+
+        Only works with HBT+ catalogs for now
 
     Parameters
     ----------
@@ -262,8 +266,15 @@ def subhalos_in_clusters(
         hdf5 file name
     cluster_mass_min, cluster_mass_max : ``float``, optional
         minimum and maximum spherical overdensity cluster mass, in Msun
+    cluster_mask : dict, optional
+        minimum and maximum values for cluster propoerties. Each entry in
+        the dictionary should correspond to a ``Dataset`` name in ``halofile``,
+        and its value correspond to an iterable of (vmin,vmax).
+        The mask is applied as ``vmin <= x < vmax``. Ignored if ``clusters``
+        is provided
     clusters : ``pd.DataFrame``, optional
-        cluster sample. Must contain at least the columns ``(HostHaloId,CentreOfMass_x,CentreOfMass_y,CentreOfMass_z)``
+        cluster sample. Must contain at least the columns
+        ``(HostHaloId,CentreOfMass_x,CentreOfMass_y,CentreOfMass_z)``
     n : int, optional
         number of clusters to return, chosen randomly given the mass range.
         If not specified all clusters are returned
@@ -287,46 +298,59 @@ def subhalos_in_clusters(
     cluster_galaxies : ``pd.DataFrame``
         galaxies within clusters
     """
+    assert cluster_mask is None or isinstance(
+        cluster_mask, dict
+    ), f"cluster_mask must be a dictionary, received {type(cluster_mask)}"
+    if isinstance(cluster_mask, dict):
+        if clusters is not None:
+            warnings.warn("cluster_mask ignored when clusters is provided")
+            cluster_mask = None
     with h5py.File(halofile) as file:
         hostid = file.get("InputHalos/HBTplus/HostHaloId")[()]
-        # merge centrals and satellites as in testing.py
-        com = file.get("BoundSubhaloProperties/CentreOfMass")
+        valid = hostid > -1
+        hostid = hostid[valid]
+        # merge centrals and satellites
+        com = file.get("BoundSubhaloProperties/CentreOfMass")[()][valid]
+        rank = file.get("InputHalos/HBTplus/Rank")[()][valid]
         galaxies = pd.DataFrame(
             {
-                "TrackId": file.get("InputHalos/HBTplus/TrackId")[()],
+                "TrackId": file.get("InputHalos/HBTplus/TrackId")[()][valid],
                 "HostHaloId": hostid,
-                "Rank": file.get("InputHalos/HBTplus/Rank")[()],
+                "Rank": rank,
             }
         )
         for i, coord in enumerate("xyz"):
             galaxies[coord] = com[:, i]
         if subhalo_cols is not None:
             for col in subhalo_cols:
-                galaxies[col] = file.get(f"BoundSubhaloProperties/{col}")[()]
+                galaxies[col] = file.get(f"BoundSubhaloProperties/{col}")[()][valid]
         # in case there are constraints on subhalos
-        mask = hostid > -1
+        mask = True
         if subhalo_mask is not None:
             for col, (vmin, vmax) in subhalo_mask.items():
-                xmask = file.get(f"BoundSubhaloProperties/{col}")[()]
+                xmask = file.get(f"BoundSubhaloProperties/{col}")[()][valid]
                 mask = mask & (xmask >= vmin) & (xmask < vmax)
             del xmask
         galaxies = galaxies.loc[mask]
         if clusters is None:
-            mcl = file.get(f"SO/{overdensity}/TotalMass")[()][mask]
-            bcg = (mcl > cluster_mass_min) & (mcl < cluster_mass_max)
-            clusters = pd.DataFrame(
-                {
-                    "HostHaloId": galaxies["HostHaloId"][bcg],
-                    "SO/TotalMass": mcl[bcg],
-                }
-            )
+            cols = []
+            clmask = rank == 0
+            clusters = {"HostHaloId": hostid[clmask]}
+            if isinstance(cluster_mask, dict):
+                for col, (vmin, vmax) in cluster_mask.items():
+                    v = file.get(col)[()][valid]
+                    clmask = clmask & (v >= vmin) & (v < vmax)
+                    cols.append((col, v))
+                cols = {col: v[clmask] for col, v in cols}
+                clusters = {**clusters, **cols}
+            clusters = pd.DataFrame(clusters)
             if so_cols is not None:
                 if isinstance(so_cols, str):
                     so_cols = (so_cols,)
                 for col in so_cols:
                     clusters[f"SO/{col}"] = file.get(f"SO/{overdensity}/{col}")[()][
-                        mask
-                    ][bcg]
+                        valid
+                    ][clmask]
         else:
             # let's just make sure it contains everything we need
             assert isinstance(clusters, pd.DataFrame)
