@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 import h5py
+from multiprocessing.pool import ThreadPool
 import numpy as np
 import os
 import pandas as pd
@@ -11,6 +12,8 @@ import warnings
 # debugging
 from icecream import ic
 from time import time
+
+warnings.simplefilter("once", category=RuntimeWarning)
 
 # see https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html
 pd.options.mode.copy_on_write = True
@@ -171,6 +174,7 @@ def particles_around(
     dmin=0 * unyt.Mpc,
     squeeze=True,
     progress=True,
+    nthreads=1,
 ):
     """Find particles no further than a given distance from sets of coordinates
 
@@ -185,8 +189,13 @@ def particles_around(
         items must be any subset of ["dm", "gas", "stars"]
     dmin : ``unyt.unyt_quantity``, optional
         minimum 3d distance
-    squeeze: ``bool``, optional
+    squeeze : ``bool``
         return squeezed array if only one particle type is provided
+    progress : ``bool``
+        whether to show a progress bar. Disabled if ``nthreads>1``
+    nthreads : ``int``
+        number of threads to use to match particles.
+
 
     Returns
     -------
@@ -207,6 +216,8 @@ def particles_around(
     for pt in particle_type:
         if pt not in _valid_types:
             raise ValueError(f"particle type {pt} not recognized")
+    if nthreads > 1:
+        progress = False
     _tqdm = tqdm if progress else lambda x, **kwargs: x
     if coords.units != dmax.units:
         coords = coords.to(dmax.units)
@@ -240,17 +251,45 @@ def particles_around(
         # using indices instead of boolean masks so I don't have to keep
         # the entire arrays in memory
         rng = np.arange(p[i].masses.size, dtype=int)
-        matching[i] = [
-            rng[
-                np.abs(((p[i].coordinates - xyz) ** 2).sum(axis=1) ** 0.5 - dmid)
-                < dmid / 2
+        ti = time()
+        if nthreads == 1:
+            matching[i] = [
+                _find_particles_around(p[i].coordinates, xyz, dmid, rng)
+                for xyz in _tqdm(coords, total=len(coords))
             ]
-            for xyz in _tqdm(coords, total=len(coords))
-        ]
+        else:
+            matching[i] = [[]] * len(coords)
+            pool = ThreadPool(nthreads)
+            out = [
+                pool.apply_async(
+                    _find_particles_around,
+                    args=(p[i].coordinates, xyz, dmid, rng),
+                    kwds=dict(idx=j),
+                )
+                for j, xyz in enumerate(coords)
+            ]
+            pool.close()
+            pool.join()
+            for match in out:
+                j, match = match.get()
+                matching[i][j] = match
+        tf = time()
+        ic("matching", nthreads, tf - ti)
     if len(particle_type) == 1 and squeeze:
         p = p[0]
         matching = matching[0]
     return p, matching
+
+
+def _find_particles_around(particle_coords, xyz, dmid, rng, idx=None):
+    """Helper function for ``particles_around``"""
+    matches = rng[
+        np.abs(((particle_coords - xyz) ** 2).sum(axis=1) ** 0.5 - dmid) < dmid / 2
+    ]
+    # when multiprocessing
+    if idx is None:
+        return matches
+    return idx, matches
 
 
 def subhalos_in_clusters(
@@ -510,6 +549,12 @@ def read_args():
     add("-s", "--sim", default="HYDRO_FIDUCIAL")
     add("-z", "--snapshot", default=77, type=int)
     add("--debug", action="store_true")
+    add(
+        "--nthreads",
+        default=1,
+        type=int,
+        help="Number of threads (used for specific tasks)",
+    )
     add("--seed", default=1, type=int, help="Random seed")
     add("--test", action="store_true")
     add("--min-mass-cluster", default=1e15, type=float, help="Minimum cluster mass")
