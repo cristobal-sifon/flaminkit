@@ -164,7 +164,13 @@ def infalling_groups(
 
 
 def particles_around(
-    particle_file, coords, dmax, particle_type, dmin=0 * unyt.Mpc, squeeze=True
+    particle_file,
+    coords,
+    dmax,
+    particle_type,
+    dmin=0 * unyt.Mpc,
+    squeeze=True,
+    progress=True,
 ):
     """Find particles no further than a given distance from sets of coordinates
 
@@ -190,7 +196,10 @@ def particles_around(
         List of indices pointing to ``particles`` corresponding to all
         particles around each subhalo within the distance constraints
     """
-    _tqdm = tqdm if progress else lambda x, **kwargs: x
+    assert isinstance(dmax, unyt.unyt_quantity)
+    assert isinstance(dmin, unyt.unyt_quantity)
+    assert isinstance(squeeze, bool)
+    assert isinstance(progress, bool)
     # assert particle types
     _valid_types = ["dm", "gas", "stars"]
     if isinstance(particle_type, str):
@@ -198,6 +207,7 @@ def particles_around(
     for pt in particle_type:
         if pt not in _valid_types:
             raise ValueError(f"particle type {pt} not recognized")
+    _tqdm = tqdm if progress else lambda x, **kwargs: x
     if coords.units != dmax.units:
         coords = coords.to(dmax.units)
     mask = sw.mask(particle_file)
@@ -216,6 +226,9 @@ def particles_around(
         mask.constrain_spatial(region, intersect=True)
     particles = sw.load(particle_file, mask=mask)
     p = [[]] * len(particle_type)
+    matching = [[]] * len(p)
+    # convenience
+    dmid = dmax - dmin
     for i, pt in enumerate(particle_type):
         if pt == "dm":
             p[i] = particles.dark_matter
@@ -223,20 +236,16 @@ def particles_around(
             p[i] = particles.gas
         elif pt == "stars":
             p[i] = particles.stars
-    ic(p)
-    rngs = [np.arange(pi.masses.size, dtype=int) for pi in p]
-    # for xyz in _tqdm(coords, total=len(coords)):
-    matching = [
-        [rng[((pi.coordinates - xyz) ** 2).sum(axis=1) ** 0.5 < dmax] for xyz in coords]
-        for pi, rng in zip(p, rngs)
-    ]
-    if dmin.value > 0:
-        matching = [
-            [
-                ((pi.coordinates[m] - xyz) ** 2).sum(axis=1) ** 0.5 > dmin
-                for m, xyz in zip(matching, coords)
+        ic(p[i])
+        # using indices instead of boolean masks so I don't have to keep
+        # the entire arrays in memory
+        rng = np.arange(p[i].masses.size, dtype=int)
+        matching[i] = [
+            rng[
+                np.abs(((p[i].coordinates - xyz) ** 2).sum(axis=1) ** 0.5 - dmid)
+                < dmid / 2
             ]
-            for pi, rng in zip(p, rngs)
+            for xyz in _tqdm(coords, total=len(coords))
         ]
     if len(particle_type) == 1 and squeeze:
         p = p[0]

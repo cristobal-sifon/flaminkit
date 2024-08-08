@@ -2,4 +2,4 @@
 
 from .core import *
 
-__version__ = "0.0.6dev0"
+__version__ = "0.0.6dev1"

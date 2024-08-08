@@ -47,6 +47,7 @@ setup(
         "numpy>=1.25",
         "pandas>=2.2",
         "scipy>=1.1",
+        "tqdm>=4.0",
     ],
     python_requires=">=3.7,<3.12",
     zip_safe=False,
