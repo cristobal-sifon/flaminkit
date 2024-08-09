@@ -1,0 +1,244 @@
+flaminkit
+=========
+
+.. py:module:: flaminkit
+
+.. autoapi-nested-parse::
+
+   A toolkit for the FLAMINGO cosmological hydrodynamical simulation suite
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flaminkit/core/index
+   /autoapi/flaminkit/plotting/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flaminkit.__version__
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flaminkit.halofile
+   flaminkit.infalling_groups
+   flaminkit.particles_around
+   flaminkit._find_particles_around
+   flaminkit.subhalos_in_clusters
+   flaminkit.subhalo_particle_statistic
+   flaminkit.parse_args
+   flaminkit.read_args
+
+
+Package Contents
+----------------
+
+.. py:function:: halofile(args, info=True)
+
+.. py:function:: infalling_groups(halofile, cluster_mass_min=0, cluster_mass_max=np.inf, clusters=None, distance_max=5, group_mass_min=0, n=None, overdensity='200_crit', so_cols=None, random_seed=None)
+
+   Find groups falling into a sample of clusters
+
+   This function looks for all clusters in the chosen mass range that are the
+   most massive cluster within ``distance_max`` and then identifies all groups
+   around them. Here, groups are defined simply by a lower mass cut. The cluster
+   center is taken as the center of mass.
+
+   Parameters
+   ----------
+   halofile : ``str``
+       hdf5 file name
+   cluster_mass_min, cluster_mass_max : ``float``, optional
+       minimum and maximum spherical overdensity cluster mass, in Msun
+   n : ``int``, optional
+       number of clusters to return, chosen randomly given the mass range.
+       If not specified all clusters are returned
+   distance_max : ``float``
+       maximum 3d distance around which to search for groups, in units of
+       the ``SORadius`` specified by ``overdensity``
+   group_mass_min : ``float``, optional
+   overdensity : ``str``
+       spherical overdensity as named in ``halofile``
+   so_cols : ``list``, optional
+       list of spherical overdensity columns to include in addition to
+       ``TotalMass`` -- NOT YET IMPLEMENTED
+
+   Returns
+   -------
+   main_clusters: ``pd.DataFrame``
+       most massive clusters within their own ``distance_max * SORadius``.
+       If ``clusters`` is provided this will be a subset of it
+   infallers : ``pd.DataFrame``
+       infalling groups
+
+
+.. py:function:: particles_around(particle_file, coords, dmax, particle_type, dmin=0 * unyt.Mpc, squeeze=True, progress=True, nthreads=1)
+
+   Find particles no further than a given distance from sets of coordinates
+
+   Parameters
+   ----------
+   particle_file : ``str``
+   coords : ``unyt.unyt_array``, shape (N, 3)
+       coordinates of interest
+   dmax : ``unyt.unyt_quantity``
+       maximum 3d distance to include particles
+   particle_type : iterable
+       items must be any subset of ["dm", "gas", "stars"]
+   dmin : ``unyt.unyt_quantity``, optional
+       minimum 3d distance
+   squeeze : ``bool``
+       return squeezed array if only one particle type is provided
+   progress : ``bool``
+       whether to show a progress bar. Disabled if ``nthreads>1``
+   nthreads : ``int``
+       number of threads to use to match particles.
+
+
+   Returns
+   -------
+   particles : ``swiftsimio.reader.SWIFTDataset`` or list
+       Loaded particles within cubical masks
+   matching : ``list`` of ``np.ndarray``, each with ``len = len(coords)``
+       List of indices pointing to ``particles`` corresponding to all
+       particles around each subhalo within the distance constraints
+
+
+.. py:function:: _find_particles_around(particle_coords, xyz, dmid, rng, idx=None)
+
+   Helper function for ``particles_around``
+
+
+.. py:function:: subhalos_in_clusters(halofile, cluster_mask=None, clusters=None, n=None, subhalo_mask=None, overdensity='200_crit', subhalo_cols=None, so_cols=None, random_seed=None)
+
+   Find subhalos within a given cluster population
+
+   .. note::
+
+       Only works with HBT+ catalogs for now
+
+   Parameters
+   ----------
+   halofile : ``str``
+       hdf5 file name
+   cluster_mass_min, cluster_mass_max : ``float``, optional
+       minimum and maximum spherical overdensity cluster mass, in Msun
+   cluster_mask : dict, optional
+       minimum and maximum values for cluster propoerties. Each entry in
+       the dictionary should correspond to a ``Dataset`` name in ``halofile``,
+       and its value correspond to an iterable of (vmin,vmax).
+       The mask is applied as ``vmin <= x < vmax``. Ignored if ``clusters``
+       is provided
+   clusters : ``pd.DataFrame``, optional
+       cluster sample. Must contain at least the columns
+       ``(HostHaloId,CentreOfMass_x,CentreOfMass_y,CentreOfMass_z)``
+   n : int, optional
+       number of clusters to return, chosen randomly given the mass range.
+       If not specified all clusters are returned
+   subhalo_mask : ``dict``, optional
+       minimum and maximum subhalo values, given as an iterable of (vmin, vmax) for each
+       desired column. Dictionary keys can be any subset of columns
+       from ``BoundSubhaloProperties``. The mask is applied as ``vmin <= x < vmax``
+   overdensity : ``str``
+       spherical overdensity as named in ``halofile``
+   subhalo_cols : ``list``, optional
+       list of columns from ``BoundSubhaloProperties`` to include in
+       addition to ``(HostHaloId,TrackId,Rank)``. Because the object returned
+       is a ``pd.DataFrame``, columns with more than one dimension are not yet
+       supported
+   so_cols : ``list``, optional
+       list of spherical overdensity columns to include in addition to
+       ``TotalMass``. Ignored if ``clusters`` is provided
+
+   Returns
+   -------
+   cluster_galaxies : ``pd.DataFrame``
+       galaxies within clusters
+
+
+.. py:function:: subhalo_particle_statistic(particle_data, subhalo_particles, statistic, weights=None, **kwargs)
+
+   Calculate subhalo properties from the particle distribution
+
+   Parameters
+   ----------
+   particle_data : ``swiftsimio.objects.cosmo_array``
+       particle property, i.e., column from a ``swiftsimio.reader.SWIFTDataset``
+   subhalo_particles : ``np.ndarray`` or ``list`, ``len = N``
+       list of indices or masks relating elements of ``particle_data`` to each
+       subhalo
+   statistic : callable
+       function to apply to the particles of each subhalo.
+   weights : ``swiftsimio.objects.cosmo_array`` or ``np.ndarray``, optional
+       weights applied to obtain a weighted statistic
+   kwargs : dict, optional
+       additional arguments passed to ``statistic``. Note that if this includes
+       another ``swiftsimio.objects.cosmo_array`` (e.g., as weights) it is
+       recommended to give the ``ndarray_view`` to ensure proper behaviour
+
+   Returns
+   -------
+   subhalo_property : ``np.ndarray``, ``shape = (N,)``
+       subhalo property obtained from the particles
+
+   Notes
+   -----
+   - If a property has more than one dimension (e.g., a position or velocity)
+     it is easiest to pass each array to this function separately as ::
+
+           mean_velocity = [subhalo_particle_statistic(
+               particles.velocities[:,i], subhalo_particles, np.mean)
+               for i in range(3)]
+
+
+
+.. py:function:: parse_args(args=None)
+
+   Parse command-line arguments
+
+   Parameters
+   ----------
+   args : `list`-like, optional
+       additional arguments to include in the parser. Each element in
+       ``args`` should contain two elements: the string(s) enabling the
+       argument and the kwargs to add it to the parser. For instance,
+           args=(('--foo', {'type': int, 'default': 1}),
+                 ('--bar', {'action': 'store_true'}))
+
+   Returns
+   -------
+       args : output of `parser.parse_args`
+
+
+.. py:function:: read_args()
+
+   Set up the base command-line arguments
+
+   Call this function from any program if there are additional
+   command-line arguments in it (to be added manually from that
+   program)
+
+   Note that any program might ignore any of these default
+   command-line arguments if only a subset are relevant
+
+   Returns
+   -------
+   parser : `argparse.ArgumentParser` object
+
+
+.. py:data:: __version__
+   :value: '0.0.6dev2'
+
+

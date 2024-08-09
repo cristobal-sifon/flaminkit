@@ -1,0 +1,55 @@
+flaminkit.plotting
+==================
+
+.. py:module:: flaminkit.plotting
+
+.. autoapi-nested-parse::
+
+   Custom plotting tools for FLAMINGO
+
+   Under development!
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flaminkit.plotting.axlabels
+   flaminkit.plotting.od
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flaminkit.plotting.axlabel_exists
+   flaminkit.plotting.get_axlabel
+
+
+Module Contents
+---------------
+
+.. py:data:: axlabels
+
+.. py:data:: od
+
+.. py:function:: axlabel_exists(column)
+
+.. py:function:: get_axlabel(column)
+
+   Produce an axis label based on a column name.
+
+   Axis labels are looked up in a hard-coded dictionary. If the
+   specific column (e.g., ``SO/200_crit/TotalMass``) exists in this
+   dictionary then this specific label is returned. If it does not,
+   this function will look for a generic label for ``TotalMass``. If
+   that also does not exist it will return simply ``"TotalMass"``
+
+   Columns should be added to this dictionary as needed
+
+   NOTE: Units not implemented
+
+

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>flaminkit &mdash; flaminkit v0.0.6dev2 0.0.6dev2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=6fd1d2f5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="flaminkit.core" href="core/index.html" />
+    <link rel="prev" title="Flaminkit" href="../../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            flaminkit v0.0.6dev2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">flaminkit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core/index.html">flaminkit.core</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plotting/index.html">flaminkit.plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flaminkit.halofile"><code class="docutils literal notranslate"><span class="pre">halofile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flaminkit.infalling_groups"><code class="docutils literal notranslate"><span class="pre">infalling_groups()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flaminkit.particles_around"><code class="docutils literal notranslate"><span class="pre">particles_around()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flaminkit._find_particles_around"><code class="docutils literal notranslate"><span class="pre">_find_particles_around()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flaminkit.subhalos_in_clusters"><code class="docutils literal notranslate"><span class="pre">subhalos_in_clusters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flaminkit.subhalo_particle_statistic"><code class="docutils literal notranslate"><span class="pre">subhalo_particle_statistic()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flaminkit.parse_args"><code class="docutils literal notranslate"><span class="pre">parse_args()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flaminkit.read_args"><code class="docutils literal notranslate"><span class="pre">read_args()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flaminkit.__version__"><code class="docutils literal notranslate"><span class="pre">__version__</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">flaminkit v0.0.6dev2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">flaminkit</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/autoapi/flaminkit/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-flaminkit">
+<span id="flaminkit"></span><h1>flaminkit<a class="headerlink" href="#module-flaminkit" title="Link to this heading"></a></h1>
+<p>A toolkit for the FLAMINGO cosmological hydrodynamical simulation suite</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="core/index.html">flaminkit.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">flaminkit.plotting</a></li>
+</ul>
+</div>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flaminkit.__version__" title="flaminkit.__version__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__version__</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flaminkit.halofile" title="flaminkit.halofile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">halofile</span></code></a>(args[, info])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flaminkit.infalling_groups" title="flaminkit.infalling_groups"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infalling_groups</span></code></a>(halofile[, cluster_mass_min, ...])</p></td>
+<td><p>Find groups falling into a sample of clusters</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flaminkit.particles_around" title="flaminkit.particles_around"><code class="xref py py-obj docutils literal notranslate"><span class="pre">particles_around</span></code></a>(particle_file, coords, dmax, ...[, ...])</p></td>
+<td><p>Find particles no further than a given distance from sets of coordinates</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flaminkit._find_particles_around" title="flaminkit._find_particles_around"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_find_particles_around</span></code></a>(particle_coords, xyz, dmid, rng)</p></td>
+<td><p>Helper function for <code class="docutils literal notranslate"><span class="pre">particles_around</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flaminkit.subhalos_in_clusters" title="flaminkit.subhalos_in_clusters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subhalos_in_clusters</span></code></a>(halofile[, cluster_mask, ...])</p></td>
+<td><p>Find subhalos within a given cluster population</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flaminkit.subhalo_particle_statistic" title="flaminkit.subhalo_particle_statistic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subhalo_particle_statistic</span></code></a>(particle_data, ...[, weights])</p></td>
+<td><p>Calculate subhalo properties from the particle distribution</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flaminkit.parse_args" title="flaminkit.parse_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_args</span></code></a>([args])</p></td>
+<td><p>Parse command-line arguments</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flaminkit.read_args" title="flaminkit.read_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_args</span></code></a>()</p></td>
+<td><p>Set up the base command-line arguments</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="flaminkit.halofile">
+<span class="sig-prename descclassname"><span class="pre">flaminkit.</span></span><span class="sig-name descname"><span class="pre">halofile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flaminkit.halofile" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flaminkit.infalling_groups">
+<span class="sig-prename descclassname"><span class="pre">flaminkit.</span></span><span class="sig-name descname"><span class="pre">infalling_groups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">halofile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_mass_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_mass_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clusters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_mass_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overdensity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'200_crit'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">so_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flaminkit.infalling_groups" title="Link to this definition"></a></dt>
+<dd><p>Find groups falling into a sample of clusters</p>
+<p>This function looks for all clusters in the chosen mass range that are the
+most massive cluster within <code class="docutils literal notranslate"><span class="pre">distance_max</span></code> and then identifies all groups
+around them. Here, groups are defined simply by a lower mass cut. The cluster
+center is taken as the center of mass.</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h3>
+<dl>
+<dt>halofile<span class="classifier"><code class="docutils literal notranslate"><span class="pre">str</span></code></span></dt><dd><p>hdf5 file name</p>
+</dd>
+<dt>cluster_mass_min, cluster_mass_max<span class="classifier"><code class="docutils literal notranslate"><span class="pre">float</span></code>, optional</span></dt><dd><p>minimum and maximum spherical overdensity cluster mass, in Msun</p>
+</dd>
+<dt>n<span class="classifier"><code class="docutils literal notranslate"><span class="pre">int</span></code>, optional</span></dt><dd><p>number of clusters to return, chosen randomly given the mass range.
+If not specified all clusters are returned</p>
+</dd>
+<dt>distance_max<span class="classifier"><code class="docutils literal notranslate"><span class="pre">float</span></code></span></dt><dd><p>maximum 3d distance around which to search for groups, in units of
+the <code class="docutils literal notranslate"><span class="pre">SORadius</span></code> specified by <code class="docutils literal notranslate"><span class="pre">overdensity</span></code></p>
+</dd>
+</dl>
+<p>group_mass_min : <code class="docutils literal notranslate"><span class="pre">float</span></code>, optional
+overdensity : <code class="docutils literal notranslate"><span class="pre">str</span></code></p>
+<blockquote>
+<div><p>spherical overdensity as named in <code class="docutils literal notranslate"><span class="pre">halofile</span></code></p>
+</div></blockquote>
+<dl>
+<dt>so_cols<span class="classifier"><code class="docutils literal notranslate"><span class="pre">list</span></code>, optional</span></dt><dd><p>list of spherical overdensity columns to include in addition to
+<code class="docutils literal notranslate"><span class="pre">TotalMass</span></code> – NOT YET IMPLEMENTED</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<dl>
+<dt>main_clusters: <code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></dt><dd><p>most massive clusters within their own <code class="docutils literal notranslate"><span class="pre">distance_max</span> <span class="pre">*</span> <span class="pre">SORadius</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">clusters</span></code> is provided this will be a subset of it</p>
+</dd>
+<dt>infallers<span class="classifier"><code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></span></dt><dd><p>infalling groups</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flaminkit.particles_around">
+<span class="sig-prename descclassname"><span class="pre">flaminkit.</span></span><span class="sig-name descname"><span class="pre">particles_around</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particle_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span> <span class="pre">*</span> <span class="pre">unyt.Mpc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flaminkit.particles_around" title="Link to this definition"></a></dt>
+<dd><p>Find particles no further than a given distance from sets of coordinates</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>particle_file : <code class="docutils literal notranslate"><span class="pre">str</span></code>
+coords : <code class="docutils literal notranslate"><span class="pre">unyt.unyt_array</span></code>, shape (N, 3)</p>
+<blockquote>
+<div><p>coordinates of interest</p>
+</div></blockquote>
+<dl>
+<dt>dmax<span class="classifier"><code class="docutils literal notranslate"><span class="pre">unyt.unyt_quantity</span></code></span></dt><dd><p>maximum 3d distance to include particles</p>
+</dd>
+<dt>particle_type<span class="classifier">iterable</span></dt><dd><p>items must be any subset of [“dm”, “gas”, “stars”]</p>
+</dd>
+<dt>dmin<span class="classifier"><code class="docutils literal notranslate"><span class="pre">unyt.unyt_quantity</span></code>, optional</span></dt><dd><p>minimum 3d distance</p>
+</dd>
+<dt>squeeze<span class="classifier"><code class="docutils literal notranslate"><span class="pre">bool</span></code></span></dt><dd><p>return squeezed array if only one particle type is provided</p>
+</dd>
+<dt>progress<span class="classifier"><code class="docutils literal notranslate"><span class="pre">bool</span></code></span></dt><dd><p>whether to show a progress bar. Disabled if <code class="docutils literal notranslate"><span class="pre">nthreads&gt;1</span></code></p>
+</dd>
+<dt>nthreads<span class="classifier"><code class="docutils literal notranslate"><span class="pre">int</span></code></span></dt><dd><p>number of threads to use to match particles.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h3>Returns<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<dl>
+<dt>particles<span class="classifier"><code class="docutils literal notranslate"><span class="pre">swiftsimio.reader.SWIFTDataset</span></code> or list</span></dt><dd><p>Loaded particles within cubical masks</p>
+</dd>
+<dt>matching<span class="classifier"><code class="docutils literal notranslate"><span class="pre">list</span></code> of <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code>, each with <code class="docutils literal notranslate"><span class="pre">len</span> <span class="pre">=</span> <span class="pre">len(coords)</span></code></span></dt><dd><p>List of indices pointing to <code class="docutils literal notranslate"><span class="pre">particles</span></code> corresponding to all
+particles around each subhalo within the distance constraints</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flaminkit._find_particles_around">
+<span class="sig-prename descclassname"><span class="pre">flaminkit.</span></span><span class="sig-name descname"><span class="pre">_find_particles_around</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particle_coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flaminkit._find_particles_around" title="Link to this definition"></a></dt>
+<dd><p>Helper function for <code class="docutils literal notranslate"><span class="pre">particles_around</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flaminkit.subhalos_in_clusters">
+<span class="sig-prename descclassname"><span class="pre">flaminkit.</span></span><span class="sig-name descname"><span class="pre">subhalos_in_clusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">halofile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clusters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subhalo_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overdensity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'200_crit'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subhalo_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">so_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flaminkit.subhalos_in_clusters" title="Link to this definition"></a></dt>
+<dd><p>Find subhalos within a given cluster population</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only works with HBT+ catalogs for now</p>
+</div>
+<section id="id3">
+<h3>Parameters<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<dl>
+<dt>halofile<span class="classifier"><code class="docutils literal notranslate"><span class="pre">str</span></code></span></dt><dd><p>hdf5 file name</p>
+</dd>
+<dt>cluster_mass_min, cluster_mass_max<span class="classifier"><code class="docutils literal notranslate"><span class="pre">float</span></code>, optional</span></dt><dd><p>minimum and maximum spherical overdensity cluster mass, in Msun</p>
+</dd>
+<dt>cluster_mask<span class="classifier">dict, optional</span></dt><dd><p>minimum and maximum values for cluster propoerties. Each entry in
+the dictionary should correspond to a <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> name in <code class="docutils literal notranslate"><span class="pre">halofile</span></code>,
+and its value correspond to an iterable of (vmin,vmax).
+The mask is applied as <code class="docutils literal notranslate"><span class="pre">vmin</span> <span class="pre">&lt;=</span> <span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">vmax</span></code>. Ignored if <code class="docutils literal notranslate"><span class="pre">clusters</span></code>
+is provided</p>
+</dd>
+<dt>clusters<span class="classifier"><code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code>, optional</span></dt><dd><p>cluster sample. Must contain at least the columns
+<code class="docutils literal notranslate"><span class="pre">(HostHaloId,CentreOfMass_x,CentreOfMass_y,CentreOfMass_z)</span></code></p>
+</dd>
+<dt>n<span class="classifier">int, optional</span></dt><dd><p>number of clusters to return, chosen randomly given the mass range.
+If not specified all clusters are returned</p>
+</dd>
+<dt>subhalo_mask<span class="classifier"><code class="docutils literal notranslate"><span class="pre">dict</span></code>, optional</span></dt><dd><p>minimum and maximum subhalo values, given as an iterable of (vmin, vmax) for each
+desired column. Dictionary keys can be any subset of columns
+from <code class="docutils literal notranslate"><span class="pre">BoundSubhaloProperties</span></code>. The mask is applied as <code class="docutils literal notranslate"><span class="pre">vmin</span> <span class="pre">&lt;=</span> <span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">vmax</span></code></p>
+</dd>
+<dt>overdensity<span class="classifier"><code class="docutils literal notranslate"><span class="pre">str</span></code></span></dt><dd><p>spherical overdensity as named in <code class="docutils literal notranslate"><span class="pre">halofile</span></code></p>
+</dd>
+<dt>subhalo_cols<span class="classifier"><code class="docutils literal notranslate"><span class="pre">list</span></code>, optional</span></dt><dd><p>list of columns from <code class="docutils literal notranslate"><span class="pre">BoundSubhaloProperties</span></code> to include in
+addition to <code class="docutils literal notranslate"><span class="pre">(HostHaloId,TrackId,Rank)</span></code>. Because the object returned
+is a <code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code>, columns with more than one dimension are not yet
+supported</p>
+</dd>
+<dt>so_cols<span class="classifier"><code class="docutils literal notranslate"><span class="pre">list</span></code>, optional</span></dt><dd><p>list of spherical overdensity columns to include in addition to
+<code class="docutils literal notranslate"><span class="pre">TotalMass</span></code>. Ignored if <code class="docutils literal notranslate"><span class="pre">clusters</span></code> is provided</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h3>Returns<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<dl>
+<dt>cluster_galaxies<span class="classifier"><code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></span></dt><dd><p>galaxies within clusters</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flaminkit.subhalo_particle_statistic">
+<span class="sig-prename descclassname"><span class="pre">flaminkit.</span></span><span class="sig-name descname"><span class="pre">subhalo_particle_statistic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particle_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subhalo_particles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flaminkit.subhalo_particle_statistic" title="Link to this definition"></a></dt>
+<dd><p>Calculate subhalo properties from the particle distribution</p>
+<section id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<dl>
+<dt>particle_data<span class="classifier"><code class="docutils literal notranslate"><span class="pre">swiftsimio.objects.cosmo_array</span></code></span></dt><dd><p>particle property, i.e., column from a <code class="docutils literal notranslate"><span class="pre">swiftsimio.reader.SWIFTDataset</span></code></p>
+</dd>
+<dt>subhalo_particles<span class="classifier"><code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> or <code class="docutils literal notranslate"><span class="pre">list`,</span> <span class="pre">``len</span> <span class="pre">=</span> <span class="pre">N</span></code></span></dt><dd><p>list of indices or masks relating elements of <code class="docutils literal notranslate"><span class="pre">particle_data</span></code> to each
+subhalo</p>
+</dd>
+<dt>statistic<span class="classifier">callable</span></dt><dd><p>function to apply to the particles of each subhalo.</p>
+</dd>
+<dt>weights<span class="classifier"><code class="docutils literal notranslate"><span class="pre">swiftsimio.objects.cosmo_array</span></code> or <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code>, optional</span></dt><dd><p>weights applied to obtain a weighted statistic</p>
+</dd>
+<dt>kwargs<span class="classifier">dict, optional</span></dt><dd><p>additional arguments passed to <code class="docutils literal notranslate"><span class="pre">statistic</span></code>. Note that if this includes
+another <code class="docutils literal notranslate"><span class="pre">swiftsimio.objects.cosmo_array</span></code> (e.g., as weights) it is
+recommended to give the <code class="docutils literal notranslate"><span class="pre">ndarray_view</span></code> to ensure proper behaviour</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h3>Returns<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<dl>
+<dt>subhalo_property<span class="classifier"><code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code>, <code class="docutils literal notranslate"><span class="pre">shape</span> <span class="pre">=</span> <span class="pre">(N,)</span></code></span></dt><dd><p>subhalo property obtained from the particles</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h3>
+<ul>
+<li><p>If a property has more than one dimension (e.g., a position or velocity)
+it is easiest to pass each array to this function separately as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mean_velocity</span> <span class="o">=</span> <span class="p">[</span><span class="n">subhalo_particle_statistic</span><span class="p">(</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">velocities</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">subhalo_particles</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flaminkit.parse_args">
+<span class="sig-prename descclassname"><span class="pre">flaminkit.</span></span><span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flaminkit.parse_args" title="Link to this definition"></a></dt>
+<dd><p>Parse command-line arguments</p>
+<section id="id7">
+<h3>Parameters<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<dl>
+<dt>args<span class="classifier"><cite>list</cite>-like, optional</span></dt><dd><p>additional arguments to include in the parser. Each element in
+<code class="docutils literal notranslate"><span class="pre">args</span></code> should contain two elements: the string(s) enabling the
+argument and the kwargs to add it to the parser. For instance,</p>
+<blockquote>
+<div><dl class="simple">
+<dt>args=((’–foo’, {‘type’: int, ‘default’: 1}),</dt><dd><p>(’–bar’, {‘action’: ‘store_true’}))</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h3>Returns<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<blockquote>
+<div><p>args : output of <cite>parser.parse_args</cite></p>
+</div></blockquote>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flaminkit.read_args">
+<span class="sig-prename descclassname"><span class="pre">flaminkit.</span></span><span class="sig-name descname"><span class="pre">read_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#flaminkit.read_args" title="Link to this definition"></a></dt>
+<dd><p>Set up the base command-line arguments</p>
+<p>Call this function from any program if there are additional
+command-line arguments in it (to be added manually from that
+program)</p>
+<p>Note that any program might ignore any of these default
+command-line arguments if only a subset are relevant</p>
+<section id="id9">
+<h3>Returns<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<p>parser : <cite>argparse.ArgumentParser</cite> object</p>
+</section>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="flaminkit.__version__">
+<span class="sig-prename descclassname"><span class="pre">flaminkit.</span></span><span class="sig-name descname"><span class="pre">__version__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.0.6dev2'</span></em><a class="headerlink" href="#flaminkit.__version__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../../index.html" class="btn btn-neutral float-left" title="Flaminkit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="core/index.html" class="btn btn-neutral float-right" title="flaminkit.core" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Cristóbal Sifón.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+name: docs
+dependencies:
+    - nbsphinx==0.9.4
+    - sphinx==7.4.7
+    - pip:
+        - sphinx_rtd_theme==2.0.0
+        - sphinx_autoapi==3.2.1
