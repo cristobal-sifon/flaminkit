@@ -1,0 +1,6 @@
+autoapi==3.2.1
+docutils==0.20.1
+nbsphinx==0.9.4
+sphinx==7.4.7
+sphinx-autoapi==3.2.1
+sphinx_rtd_theme==2.0.0
