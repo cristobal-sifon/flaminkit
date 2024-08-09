@@ -1,7 +1,7 @@
 Flaminkit
 =========
 
-A toolkit for the FLAMINGO cosmological hydrodynamical simulation suite
+A toolkit for the FLAMINGO cosmological hydrodynamical simulation suite. Flaminkit is developed on `Github <https://github.com/cristobal-sifon/flaminkit>`_.
 
 .. note::
     Currently only works with HBT+ catalogs.
