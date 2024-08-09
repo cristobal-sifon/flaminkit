@@ -20,6 +20,17 @@ pd.options.mode.copy_on_write = True
 
 
 def halofile(args, info=True):
+    """Name of file containing halo information, based on command-line arguments
+
+    Parameters
+    ----------
+    args : output of ``parse_args``
+
+    Returns
+    -------
+    halofile: ``str``
+        filename
+    """
     snap = f"{args.snapshot:04d}"
     halofile = os.path.join(args.path["SOAP-HBT"], f"halo_properties_{snap}.hdf5")
     if not info:
@@ -66,19 +77,22 @@ def infalling_groups(
     halofile : ``str``
         hdf5 file name
     cluster_mass_min, cluster_mass_max : ``float``, optional
-        minimum and maximum spherical overdensity cluster mass, in Msun
-    n : ``int``, optional
-        number of clusters to return, chosen randomly given the mass range.
-        If not specified all clusters are returned
+        minimum and maximum spherical overdensity cluster mass, in solar masses
     distance_max : ``float``
         maximum 3d distance around which to search for groups, in units of
         the ``SORadius`` specified by ``overdensity``
     group_mass_min : ``float``, optional
+        minimum infall group mass
+    n : ``int``, optional
+        number of clusters to return, chosen randomly given the mass range.
+        If not specified all clusters are returned
     overdensity : ``str``
         spherical overdensity as named in ``halofile``
     so_cols : ``list``, optional
         list of spherical overdensity columns to include in addition to
         ``TotalMass`` -- NOT YET IMPLEMENTED
+    random_seed : ``int``, optional
+        random seed used to select ``n`` clusters, if applicable.
 
     Returns
     -------
@@ -181,12 +195,12 @@ def particles_around(
     Parameters
     ----------
     particle_file : ``str``
-    coords : ``unyt.unyt_array``, shape (N, 3)
+    coords : ``unyt.unyt_array``, `shape: (N, 3)`
         coordinates of interest
     dmax : ``unyt.unyt_quantity``
         maximum 3d distance to include particles
-    particle_type : iterable
-        items must be any subset of ["dm", "gas", "stars"]
+    particle_type : `iterable`
+        items must be any subset of ``("dm", "gas", "stars")``
     dmin : ``unyt.unyt_quantity``, optional
         minimum 3d distance
     squeeze : ``bool``
@@ -286,7 +300,7 @@ def _find_particles_around(particle_coords, xyz, dmid, rng, idx=None):
     matches = rng[
         np.abs(((particle_coords - xyz) ** 2).sum(axis=1) ** 0.5 - dmid) < dmid / 2
     ]
-    # when multiprocessing
+    # return indices when multiprocessing
     if idx is None:
         return matches
     return idx, matches
@@ -315,20 +329,23 @@ def subhalos_in_clusters(
         hdf5 file name
     cluster_mass_min, cluster_mass_max : ``float``, optional
         minimum and maximum spherical overdensity cluster mass, in Msun
-    cluster_mask : dict, optional
+    cluster_mask : ``dict``, optional
         minimum and maximum values for cluster propoerties. Each entry in
         the dictionary should correspond to a ``Dataset`` name in ``halofile``,
-        and its value correspond to an iterable of (vmin,vmax).
+        and its value correspond to an iterable with elements ``(vmin,vmax)``.
         The mask is applied as ``vmin <= x < vmax``. Ignored if ``clusters``
-        is provided
+        is provided. For instance, ::
+
+            cluster_mask = {"SO/200_crit/TotalMass": (1e15, np.inf)}
+
     clusters : ``pd.DataFrame``, optional
         cluster sample. Must contain at least the columns
         ``(HostHaloId,CentreOfMass_x,CentreOfMass_y,CentreOfMass_z)``
-    n : int, optional
+    n : ``int``, optional
         number of clusters to return, chosen randomly given the mass range.
-        If not specified all clusters are returned
+        If not specified all clusters that comply with ``cluster_mask`` are returned
     subhalo_mask : ``dict``, optional
-        minimum and maximum subhalo values, given as an iterable of (vmin, vmax) for each
+        minimum and maximum subhalo values, given as an iterable of ``(vmin, vmax)`` for each
         desired column. Dictionary keys can be any subset of columns
         from ``BoundSubhaloProperties``. The mask is applied as ``vmin <= x < vmax``
     overdensity : ``str``
@@ -439,21 +456,21 @@ def subhalo_particle_statistic(
     ----------
     particle_data : ``swiftsimio.objects.cosmo_array``
         particle property, i.e., column from a ``swiftsimio.reader.SWIFTDataset``
-    subhalo_particles : ``np.ndarray`` or ``list`, ``len = N``
+    subhalo_particles : ``np.ndarray`` or ``list`, `len: N`
         list of indices or masks relating elements of ``particle_data`` to each
         subhalo
-    statistic : callable
+    statistic : ``callable``
         function to apply to the particles of each subhalo.
     weights : ``swiftsimio.objects.cosmo_array`` or ``np.ndarray``, optional
         weights applied to obtain a weighted statistic
-    kwargs : dict, optional
+    kwargs : ``dict``, optional
         additional arguments passed to ``statistic``. Note that if this includes
         another ``swiftsimio.objects.cosmo_array`` (e.g., as weights) it is
         recommended to give the ``ndarray_view`` to ensure proper behaviour
 
     Returns
     -------
-    subhalo_property : ``np.ndarray``, ``shape = (N,)``
+    subhalo_property : ``np.ndarray``, `shape: (N,)`
         subhalo property obtained from the particles
 
     Notes
@@ -483,12 +500,12 @@ def parse_args(args=None):
 
     Parameters
     ----------
-    args : `list`-like, optional
+    args : ``list``-like, optional
         additional arguments to include in the parser. Each element in
         ``args`` should contain two elements: the string(s) enabling the
-        argument and the kwargs to add it to the parser. For instance,
-            args=(('--foo', {'type': int, 'default': 1}),
-                  ('--bar', {'action': 'store_true'}))
+        argument and the kwargs to add it to the parser. For instance, ::
+
+            args=(('--foo', {'type': int, 'default': 1}), ('--bar', {'action': 'store_true'}))
 
     Returns
     -------
@@ -541,7 +558,7 @@ def read_args():
 
     Returns
     -------
-    parser : `argparse.ArgumentParser` object
+    parser : ``argparse.ArgumentParser`` object
     """
     parser = ArgumentParser()
     add = parser.add_argument
