@@ -1,4 +1,4 @@
-autoapi==3.2.1
+autoapi==2.0.1
 docutils==0.20.1
 nbsphinx==0.9.4
 sphinx==7.4.7
