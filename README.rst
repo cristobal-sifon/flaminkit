@@ -15,4 +15,4 @@ Flaminkit can be installed through ``pip``: ::
     pip install flaminkit
 
 
-See `<>`
+See the `documentation <https://flaminkit.readthedocs.io/en/latest/>`_ for more details.

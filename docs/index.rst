@@ -4,8 +4,10 @@ Flaminkit
 A toolkit for the FLAMINGO cosmological hydrodynamical simulation suite
 
 .. note::
-
     Currently only works with HBT+ catalogs.
+
+.. warning::
+    Flaminkit is under active development; the functionalities and API may change.
 
 Installation
 ------------
@@ -22,10 +24,14 @@ Version log
     - Options to parallelize or show progress bar in ``particles_around``
     - Remove ``requirements.txt``
 
-.. note ::
-
+.. note::
     Versions 0.0.5 and older cannot be installed from PyPI
 
+
+License
+-------
+
+Flaminkit is distributed under a GNU GPLv3 License. See `here <https://github.com/cristobal-sifon/flaminkit/blob/master/LICENSE>`_ for more details.
 
 .. toctree::
     :maxdepth: 4
