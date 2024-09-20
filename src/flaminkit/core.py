@@ -32,7 +32,7 @@ def halofile(args, info=True):
         filename
     """
     snap = f"{args.snapshot:04d}"
-    halofile = os.path.join(args.path["SOAP-HBT"], f"halo_properties_{snap}.hdf5")
+    halofile = os.path.join(args.path["SOAP"], f"halo_properties_{snap}.hdf5")
     if not info:
         return halofile
     # to have some info handy
@@ -103,14 +103,14 @@ def infalling_groups(
         infalling groups
     """
     with h5py.File(halofile) as file:
-        hostid = file.get("InputHalos/HBTplus/HostHaloId")[()]
+        hostid = file.get("InputHalos/HBTplus/HostFOFId")[()]
         mass = file.get(f"SO/{overdensity}/TotalMass")[()]
         # working with central galaxies is enough here
-        good = (hostid > -1) & (file.get("InputHalos/HBTplus/Rank")[()] == 0)
+        good = (hostid > -1) & (file.get("InputHalos/IsCentral")[()] == 1)
         df = pd.DataFrame(
             {
                 "TrackId": file.get("InputHalos/HBTplus/TrackId")[()][good],
-                "HostHaloId": hostid[good],
+                "HostFOFId": hostid[good],
                 "TotalMass": mass[good],
                 "SORadius": file.get(f"SO/{overdensity}/SORadius")[()][good],
             }
@@ -124,7 +124,7 @@ def infalling_groups(
         else:
             assert isinstance(clusters, pd.DataFrame)
             assert "TrackId" in clusters.columns
-            cols = ["HostHaloId", "TotalMass", "SORadius"] + [
+            cols = ["HostFOFId", "TotalMass", "SORadius"] + [
                 f"CentreOfMass_{x}" for x in "xyz"
             ]
             addcols = [col for col in cols if col not in clusters.columns]
@@ -147,7 +147,7 @@ def infalling_groups(
     # main_clusters = []
     infallers = {
         "TrackId": [],
-        "HostHaloId": [],
+        "HostFOFId": [],
         "CentreOfMass_x": [],
         "CentreOfMass_y": [],
         "CentreOfMass_z": [],
@@ -340,19 +340,19 @@ def subhalos_in_clusters(
 
     clusters : ``pd.DataFrame``, optional
         cluster sample. Must contain at least the columns
-        ``(HostHaloId,CentreOfMass_x,CentreOfMass_y,CentreOfMass_z)``
+        ``(HostFOFId,CentreOfMass_x,CentreOfMass_y,CentreOfMass_z)``
     n : ``int``, optional
         number of clusters to return, chosen randomly given the mass range.
         If not specified all clusters that comply with ``cluster_mask`` are returned
     subhalo_mask : ``dict``, optional
         minimum and maximum subhalo values, given as an iterable of ``(vmin, vmax)`` for each
         desired column. Dictionary keys can be any subset of columns
-        from ``BoundSubhaloProperties``. The mask is applied as ``vmin <= x < vmax``
+        from ``BoundSubhalo``. The mask is applied as ``vmin <= x < vmax``
     overdensity : ``str``
         spherical overdensity as named in ``halofile``
     subhalo_cols : ``list``, optional
-        list of columns from ``BoundSubhaloProperties`` to include in
-        addition to ``(HostHaloId,TrackId,Rank)``. Because the object returned
+        list of columns from ``BoundSubhalo`` to include in
+        addition to ``(HostFOFId,TrackId,Depth)``. Because the object returned
         is a ``pd.DataFrame``, columns with more than one dimension are not yet
         supported
     so_cols : ``list``, optional
@@ -367,48 +367,52 @@ def subhalos_in_clusters(
     assert cluster_mask is None or isinstance(
         cluster_mask, dict
     ), f"cluster_mask must be a dictionary, received {type(cluster_mask)}"
+    assert (n is None) or (
+        isinstance(n, int) & (n > 0)
+    ), f"if provided, n must be a positive integer; received {n}"
     if isinstance(cluster_mask, dict):
         if clusters is not None:
             warnings.warn("cluster_mask ignored when clusters is provided")
             cluster_mask = None
     with h5py.File(halofile) as file:
-        hostid = file.get("InputHalos/HBTplus/HostHaloId")[()]
+        hostid = file.get("InputHalos/HBTplus/HostFOFId")[()]
         valid = hostid > -1
         hostid = hostid[valid]
         # merge centrals and satellites
-        com = file.get("BoundSubhaloProperties/CentreOfMass")[()][valid]
-        rank = file.get("InputHalos/HBTplus/Rank")[()][valid]
+        com = file.get("BoundSubhalo/CentreOfMass")[()][valid]
+        depth = file.get("InputHalos/HBTplus/Depth")[()][valid]
         galaxies = pd.DataFrame(
             {
                 "TrackId": file.get("InputHalos/HBTplus/TrackId")[()][valid],
-                "HostHaloId": hostid,
-                "Rank": rank,
+                "HostFOFId": hostid,
+                "Depth": depth,
             }
         )
         for i, coord in enumerate("xyz"):
             galaxies[coord] = com[:, i]
         if subhalo_cols is not None:
             for col in subhalo_cols:
-                galaxies[col] = file.get(f"BoundSubhaloProperties/{col}")[()][valid]
+                galaxies[col] = file.get(f"BoundSubhalo/{col}")[()][valid]
         # in case there are constraints on subhalos
         mask = True
         if subhalo_mask is not None:
             for col, (vmin, vmax) in subhalo_mask.items():
-                xmask = file.get(f"BoundSubhaloProperties/{col}")[()][valid]
+                xmask = file.get(f"BoundSubhalo/{col}")[()][valid]
                 mask = mask & (xmask >= vmin) & (xmask < vmax)
+                ic(col, xmask.min(), xmask.max(), vmin, vmax, mask.sum())
             del xmask
         galaxies = galaxies.loc[mask]
         # load clusters
         if clusters is None:
             cols = []
-            clmask = rank == 0
+            clmask = depth == 0
             if isinstance(cluster_mask, dict):
                 for col, (vmin, vmax) in cluster_mask.items():
                     v = file.get(col)[()][valid]
                     clmask = clmask & (v >= vmin) & (v < vmax)
                     cols.append((col, v))
                 cols = {col: v[clmask] for col, v in cols}
-            clusters = {"HostHaloId": hostid[clmask]}
+            clusters = {"HostFOFId": hostid[clmask]}
             if isinstance(cluster_mask, dict):
                 clusters = {**clusters, **cols}
             clusters = pd.DataFrame(clusters)
@@ -422,15 +426,16 @@ def subhalos_in_clusters(
         else:
             # let's just make sure it contains everything we need
             assert isinstance(clusters, pd.DataFrame)
-            musthave = ["HostHaloId", "TrackId"]
+            musthave = ["HostFOFId", "TrackId"]
             assert np.isin(clusters.columns, musthave).sum() == len(
                 musthave
             ), f"clusters must contain columns {musthave}"
             bcg = np.isin(galaxies["TrackId"], clusters["TrackId"])
+    ic(clusters, clusters["HostFOFId"], clusters["HostFOFId"].size)
     if n is not None:
         rdm = np.random.default_rng(random_seed)
         n = rdm.choice(
-            clusters["HostHaloId"].size,
+            clusters["HostFOFId"].size,
             n,
             replace=False,
             shuffle=False,
@@ -440,11 +445,11 @@ def subhalos_in_clusters(
     if "TrackId" in clusters.columns:
         clusters.pop("TrackId")
     cluster_galaxies = clusters.merge(
-        galaxies, how="inner", on="HostHaloId", suffixes=("_cl", "_gal")
+        galaxies, how="inner", on="HostFOFId", suffixes=("_cl", "_gal")
     )
-    if "Rank" in cluster_galaxies.columns:
-        cluster_galaxies = cluster_galaxies.sort_values("Rank", ignore_index=True)
-    return cluster_galaxies.sort_values("HostHaloId", ignore_index=True)
+    if "Depth" in cluster_galaxies.columns:
+        cluster_galaxies = cluster_galaxies.sort_values("Depth", ignore_index=True)
+    return cluster_galaxies.sort_values("HostFOFId", ignore_index=True)
 
 
 def subhalo_particle_statistic(
@@ -523,15 +528,7 @@ def parse_args(args=None):
     args.path["particles"] = os.path.join(
         args.path.get("main"), "snapshots_downsampled"
     )
-    # for now
-    args.path["SOAP-HBT"] = os.path.join(
-        "/cosma8/data/dp004/dc-foro1/HBT_SOAP",
-        args.box,
-        args.sim,
-        "SOAP_uncompressed",
-        "HBTplus",
-    )
-    args.path["SOAP-VR"] = os.path.join(args.path.get("main"), "SOAP")
+    args.path["SOAP"] = os.path.join(args.path.get("main"), "SOAP-HBT")
     if args.snapshot is not None:
         args.path["snapshot"] = os.path.join(
             args.path.get("main"), "snapshots", f"flamingo_{args.snapshot:04d}"
@@ -539,6 +536,10 @@ def parse_args(args=None):
         args.snapshot_file = os.path.join(
             args.path.get("snapshot"), f"flamingo_{args.snapshot:04d}.hdf5"
         )
+    # is there a cleaner way?
+    args.min_mass_cluster /= 1e10
+    args.min_mass_group /= 1e10
+    args.min_mass_stars /= 1e10
     if args.test:
         args.debug = True
     if not args.debug:
@@ -576,6 +577,7 @@ def read_args():
     add("--test", action="store_true")
     add("--min-mass-cluster", default=1e15, type=float, help="Minimum cluster mass")
     add("--min-mass-group", default=1e13, type=float, help="Minimum mass for groups")
+    add("--min-mass-stars", default=1e10, type=float, help="Minimum stellar mass")
     add(
         "--ncl", default=None, type=int, help="Number of main clusters (for quick runs)"
     )
