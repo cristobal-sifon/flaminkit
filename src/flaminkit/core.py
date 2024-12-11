@@ -49,7 +49,7 @@ def halofile(args, info=True):
                         if subgr[0] in ("projx",):
                             for i, subsubgr in enumerate(subgr[1].items()):
                                 ic(subsubgr)
-            print()
+            ic()
     return halofile
 
 
@@ -316,6 +316,7 @@ def subhalos_in_clusters(
     subhalo_cols=None,
     so_cols=None,
     random_seed=None,
+    subsample_by=None,
 ):
     """Find subhalos within a given cluster population
 
@@ -358,6 +359,11 @@ def subhalos_in_clusters(
     so_cols : ``list``, optional
         list of spherical overdensity columns to include in addition to
         ``TotalMass``. Ignored if ``clusters`` is provided
+    random_seed : ``int``, optional
+    subsample_by : ``str``, optional
+        if subsampling the catalog (for quick runs), specifies a column name, which
+        must be present in the catalog, and the ``n`` first entries in that column
+        will be used. Otherwise the subsampling will be random
 
     Returns
     -------
@@ -388,6 +394,7 @@ def subhalos_in_clusters(
                 "Depth": depth,
             }
         )
+        ic(galaxies)
         for i, coord in enumerate("xyz"):
             galaxies[coord] = com[:, i]
         if subhalo_cols is not None:
@@ -433,13 +440,16 @@ def subhalos_in_clusters(
             bcg = np.isin(galaxies["TrackId"], clusters["TrackId"])
     ic(clusters, clusters["HostFOFId"], clusters["HostFOFId"].size)
     if n is not None:
-        rdm = np.random.default_rng(random_seed)
-        n = rdm.choice(
-            clusters["HostFOFId"].size,
-            n,
-            replace=False,
-            shuffle=False,
-        )
+        if subsample_by is None:
+            rdm = np.random.default_rng(random_seed)
+            n = rdm.choice(
+                clusters["HostFOFId"].size,
+                n,
+                replace=False,
+                shuffle=False,
+            )
+        else:
+            n = np.argsort(clusters[subsample_by])[:n]
         clusters = clusters.iloc[n]
     # we don't need this as it's in the galaxies
     if "TrackId" in clusters.columns:
@@ -498,6 +508,13 @@ def subhalo_particle_statistic(
     # particular subhalo (e.g. if weighting by gas mass)
     f = lambda x, w, **kwargs: statistic(x, weights=w, **kwargs) if np.any(w > 0) else 0
     return np.array([f(data[p], weights[p], **kwargs) for p in subhalo_particles])
+
+
+def output_file(args, root, ext=None):
+    root = f"{root}__snap{args.snapshot}"
+    if args.ncl:
+        root = f"{root}__{args.ncl}__{args.seed}"
+    return root
 
 
 def parse_args(args=None):
